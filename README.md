@@ -6,13 +6,27 @@ A **real-time collaborative pixel canvas** where multiple users can paint togeth
 
 ## ✨ Features
 
+### Core
 - **Real-time Collaboration** - See other users paint instantly via Supabase Realtime
 - **Ghost Cursors** - See where other users are hovering on the canvas
 - **5-Second Cooldown** - Prevents spam with a visual countdown timer
+- **Optimistic UI** - Instant feedback on paint actions
+
+### Canvas Lifecycle
+- **Completion Detection** - Detects when all 400 pixels are painted
+- **Auto-Save to Gallery** - 60-second countdown, then saves and resets
+- **Duplicate Prevention** - Only one save per canvas (multi-user safe)
+
+### Customization
+- **Custom Color Picker** - Click "+" to pick any color
 - **Heatmap Mode** - Visualize which pixels are "hotly contested"
 - **Theme Toggle** - Switch between dark and light modes
-- **Export to PNG** - Save the current canvas state as an image
-- **Optimistic UI** - Instant feedback on paint actions
+
+### Export & Gallery
+- **PNG/SVG Export** - Save the current canvas in either format
+- **Gallery Panel** - Browse saved canvases in slide-out panel
+- **Image Viewer** - Click any gallery item to view full-size
+- **Download History** - Download old canvases as PNG or SVG
 
 ---
 
@@ -64,13 +78,13 @@ SUPABASE_KEY=your-anon-public-key
 
 ### 3. Run Database Migration
 
-In your Supabase dashboard, go to **SQL Editor** and run the contents of:
+In your Supabase dashboard, go to **SQL Editor** and run:
 
+```sql
+-- Run both migrations in order:
+-- 1. supabase/migrations/001_initial_schema.sql
+-- 2. supabase/migrations/002_add_gallery.sql
 ```
-supabase/migrations/001_initial_schema.sql
-```
-
-This creates the `pixels` table with 400 rows (20×20 grid).
 
 ### 4. Start Development Server
 
@@ -87,27 +101,31 @@ Open [http://localhost:3000](http://localhost:3000) 🎉
 ```
 pixel-supa/
 ├── app/
-│   ├── assets/css/main.css      # Global styles + theme variables
+│   ├── assets/css/main.css      # Theme variables + styles
 │   ├── components/
 │   │   ├── canvas/
 │   │   │   ├── PixelCell.vue    # Individual pixel
 │   │   │   └── PixelGrid.vue    # 20×20 grid + ghost cursors
 │   │   └── ui/
-│   │       ├── ColorPicker.vue  # Color palette
+│   │       ├── ColorPicker.vue  # Color palette + custom picker
 │   │       ├── CooldownTimer.vue # SVG countdown
-│   │       ├── ExportButton.vue # PNG export
+│   │       ├── ExportButton.vue # PNG/SVG export dropdown
+│   │       ├── GalleryPanel.vue # Gallery + viewer modal
+│   │       ├── ResetBanner.vue  # Countdown banner
 │   │       ├── ThemeToggle.vue  # Dark/light switch
 │   │       └── UserStats.vue    # Online count + heatmap
 │   ├── composables/
 │   │   ├── usePixelCanvas.ts    # Supabase data + realtime
 │   │   ├── useCooldown.ts       # Paint timer logic
 │   │   ├── usePresence.ts       # Ghost cursor tracking
-│   │   └── useTheme.ts          # Theme management
+│   │   ├── useTheme.ts          # Theme management
+│   │   └── useCanvasReset.ts    # Canvas lifecycle + gallery
 │   └── pages/
 │       └── index.vue            # Main app page
 ├── supabase/
 │   └── migrations/
-│       └── 001_initial_schema.sql
+│       ├── 001_initial_schema.sql
+│       └── 002_add_gallery.sql
 ├── nuxt.config.ts
 └── package.json
 ```
@@ -117,7 +135,6 @@ pixel-supa/
 ## 🗄️ Database Schema
 
 ### `pixels` table
-
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | `SERIAL` | Primary key |
@@ -125,6 +142,13 @@ pixel-supa/
 | `y` | `INT` | Y coordinate (0-19) |
 | `color` | `TEXT` | Hex color code |
 | `change_count` | `INT` | Times painted (for heatmap) |
+
+### `canvas_history` table
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `SERIAL` | Primary key |
+| `snapshot` | `JSONB` | Pixel colors as key-value pairs |
+| `completed_at` | `TIMESTAMPTZ` | When canvas was saved |
 
 ---
 
@@ -134,25 +158,13 @@ The app supports **dark** and **light** modes:
 
 - Toggle via the sun/moon button in the top bar
 - Preference is saved to localStorage
-- All colors use CSS custom properties for easy customization
-
-To add custom themes, edit `app/composables/useTheme.ts`.
+- All colors use CSS custom properties
 
 ---
 
-## 📸 Export
+## 🧪 Testing
 
-Click the **💾 Save PNG** button to download the current canvas as a PNG image.
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+Click the **"🧪 Fill All"** button to instantly fill all pixels (for testing the gallery save feature).
 
 ---
 
