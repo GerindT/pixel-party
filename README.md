@@ -2,7 +2,7 @@
 
 A shared 20×20 pixel canvas that people paint together in real time, a small take on r/place.
 
-**UI demo — backend offline:** [pixel-party-tau.vercel.app](https://pixel-party-tau.vercel.app). The page loads, but the Supabase project behind it no longer exists, so painting and the gallery don't work. To try it, run it against your own Supabase project (below).
+**Status:** built for "a project a day", a challenge I set myself to build a small, complete app in a day. It isn't hosted; run it locally against your own Supabase project (below).
 
 ![PixelParty: an empty 20×20 grid under the toolbar](docs/screenshot.webp)
 
@@ -22,7 +22,6 @@ A shared 20×20 pixel canvas that people paint together in real time, a small ta
 
 - [Nuxt 4](https://nuxt.com) (Vue 3, TypeScript) with [Tailwind CSS](https://tailwindcss.com)
 - [Supabase](https://supabase.com): Postgres and Realtime, through `@nuxtjs/supabase`
-- Hosted on [Vercel](https://vercel.com)
 
 ## Project structure
 
@@ -57,7 +56,7 @@ npm run build     # production build
 
 ## Deploy
 
-Deploy it like any Nuxt app (it runs on Vercel now). Set `SUPABASE_URL` and `SUPABASE_KEY` in the host's environment variables.
+Deploy it like any Nuxt app. Set `SUPABASE_URL` and `SUPABASE_KEY` in the host's environment variables.
 
 ## License
 
