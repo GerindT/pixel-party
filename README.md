@@ -1,177 +1,64 @@
-# 🎨 PixelParty
+# PixelParty
 
-A **real-time collaborative pixel canvas** where multiple users can paint together. Think Reddit's r/place, but simplified and built with modern web technologies.
+A shared 20×20 pixel canvas that people paint together in real time, a small take on r/place.
 
----
+**UI demo — backend offline:** [pixel-party-tau.vercel.app](https://pixel-party-tau.vercel.app). The page loads, but the Supabase project behind it no longer exists, so painting and the gallery don't work. To try it, run it against your own Supabase project (below).
 
-## ✨ Features
+![PixelParty: an empty 20×20 grid under the toolbar](docs/screenshot.webp)
 
-### Core
-- **Real-time Collaboration** - See other users paint instantly via Supabase Realtime
-- **Ghost Cursors** - See where other users are hovering on the canvas
-- **5-Second Cooldown** - Prevents spam with a visual countdown timer
-- **Optimistic UI** - Instant feedback on paint actions
+## Features
 
-### Canvas Lifecycle
-- **Completion Detection** - Detects when all 400 pixels are painted
-- **Auto-Save to Gallery** - 60-second countdown, then saves and resets
-- **Duplicate Prevention** - Only one save per canvas (multi-user safe)
+- Paint changes reach everyone at once through Supabase Realtime
+- Other people's cursors show on the grid through Realtime Presence, with an online count
+- 5-second cooldown between paints, with a countdown ring
+- Palette plus a custom color picker
+- Heatmap mode that shades pixels by how often they have been repainted
+- When all 400 pixels are filled, a 60-second countdown starts; then the canvas is saved to the gallery and cleared
+- Gallery of saved canvases, each downloadable as PNG or SVG; the current canvas exports the same way
+- Dark and light theme, remembered in `localStorage`
+- A "Fill All" test button that fills the grid so you can try the save-and-reset flow (it is visible to every visitor)
 
-### Customization
-- **Custom Color Picker** - Click "+" to pick any color
-- **Heatmap Mode** - Visualize which pixels are "hotly contested"
-- **Theme Toggle** - Switch between dark and light modes
+## Stack
 
-### Export & Gallery
-- **PNG/SVG Export** - Save the current canvas in either format
-- **Gallery Panel** - Browse saved canvases in slide-out panel
-- **Image Viewer** - Click any gallery item to view full-size
-- **Download History** - Download old canvases as PNG or SVG
+- [Nuxt 4](https://nuxt.com) (Vue 3, TypeScript) with [Tailwind CSS](https://tailwindcss.com)
+- [Supabase](https://supabase.com): Postgres and Realtime, through `@nuxtjs/supabase`
+- Hosted on [Vercel](https://vercel.com)
 
----
-
-## 🛠️ Tech Stack
-
-| Technology | Purpose |
-|------------|---------|
-| [Nuxt 4](https://nuxt.com) | Vue 3 framework with SSR |
-| [Supabase](https://supabase.com) | Database, Realtime, Auth |
-| [Tailwind CSS](https://tailwindcss.com) | Utility-first styling |
-| TypeScript | Type safety |
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 22.12.0 or higher
-- A [Supabase](https://supabase.com) account (free tier works)
-
-### 1. Clone and Install
-
-```bash
-git clone <your-repo>
-cd pixel-supa
-npm install
-```
-
-### 2. Set Up Supabase
-
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to **Settings → API** and copy your:
-   - Project URL
-   - `anon` public key
-
-3. Create `.env` file:
-
-```bash
-cp .env.example .env
-```
-
-4. Add your credentials to `.env`:
-
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your-anon-public-key
-```
-
-### 3. Run Database Migration
-
-In your Supabase dashboard, go to **SQL Editor** and run:
-
-```sql
--- Run both migrations in order:
--- 1. supabase/migrations/001_initial_schema.sql
--- 2. supabase/migrations/002_add_gallery.sql
-```
-
-### 4. Start Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) 🎉
-
----
-
-## 📁 Project Structure
+## Project structure
 
 ```
-pixel-supa/
+pixel-party/
 ├── app/
-│   ├── assets/css/main.css      # Theme variables + styles
+│   ├── pages/index.vue
 │   ├── components/
-│   │   ├── canvas/
-│   │   │   ├── PixelCell.vue    # Individual pixel
-│   │   │   └── PixelGrid.vue    # 20×20 grid + ghost cursors
-│   │   └── ui/
-│   │       ├── ColorPicker.vue  # Color palette + custom picker
-│   │       ├── CooldownTimer.vue # SVG countdown
-│   │       ├── ExportButton.vue # PNG/SVG export dropdown
-│   │       ├── GalleryPanel.vue # Gallery + viewer modal
-│   │       ├── ResetBanner.vue  # Countdown banner
-│   │       ├── ThemeToggle.vue  # Dark/light switch
-│   │       └── UserStats.vue    # Online count + heatmap
-│   ├── composables/
-│   │   ├── usePixelCanvas.ts    # Supabase data + realtime
-│   │   ├── useCooldown.ts       # Paint timer logic
-│   │   ├── usePresence.ts       # Ghost cursor tracking
-│   │   ├── useTheme.ts          # Theme management
-│   │   └── useCanvasReset.ts    # Canvas lifecycle + gallery
-│   └── pages/
-│       └── index.vue            # Main app page
-├── supabase/
-│   └── migrations/
-│       ├── 001_initial_schema.sql
-│       └── 002_add_gallery.sql
-├── nuxt.config.ts
-└── package.json
+│   │   ├── canvas/          # PixelGrid, PixelCell
+│   │   └── ui/              # color picker, cooldown, export, gallery, theme, stats
+│   └── composables/         # usePixelCanvas, usePresence, useCooldown, useCanvasReset, useTheme
+└── supabase/migrations/     # SQL for the pixels and canvas_history tables
 ```
 
----
+## Run locally
 
-## 🗄️ Database Schema
+You need Node.js and a Supabase project.
 
-### `pixels` table
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | `SERIAL` | Primary key |
-| `x` | `INT` | X coordinate (0-19) |
-| `y` | `INT` | Y coordinate (0-19) |
-| `color` | `TEXT` | Hex color code |
-| `change_count` | `INT` | Times painted (for heatmap) |
+1. Create a project at [supabase.com](https://supabase.com).
+2. In the Supabase SQL editor, run `supabase/migrations/001_initial_schema.sql`. It creates the `pixels` table, fills it with the 400 grid cells, creates `canvas_history` for the gallery, adds both tables to the `supabase_realtime` publication, and sets the public read and write policies.
+   - Skip `002_add_gallery.sql` on a new project. It only adds `canvas_history` to databases made before 001 included it, and running it after 001 fails.
+3. Copy `.env.example` to `.env` and set:
+   - `SUPABASE_URL`: the project URL
+   - `SUPABASE_KEY`: the project's anon (public) key
+4. Start the app:
 
-### `canvas_history` table
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | `SERIAL` | Primary key |
-| `snapshot` | `JSONB` | Pixel colors as key-value pairs |
-| `completed_at` | `TIMESTAMPTZ` | When canvas was saved |
+```sh
+npm install
+npm run dev       # http://localhost:3000
+npm run build     # production build
+```
 
----
+## Deploy
 
-## 🎨 Theming
+Deploy it like any Nuxt app (it runs on Vercel now). Set `SUPABASE_URL` and `SUPABASE_KEY` in the host's environment variables.
 
-The app supports **dark** and **light** modes:
+## License
 
-- Toggle via the sun/moon button in the top bar
-- Preference is saved to localStorage
-- All colors use CSS custom properties
-
----
-
-## 🧪 Testing
-
-Click the **"🧪 Fill All"** button to instantly fill all pixels (for testing the gallery save feature).
-
----
-
-## 📄 License
-
-MIT License - feel free to use this project for learning or as a starting point for your own real-time apps!
-
----
-
-Built with ❤️ using Nuxt + Supabase
+[MIT](LICENSE)
